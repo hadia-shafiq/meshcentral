@@ -1,8 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>CUSTOM MESHCENTRAL</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="manifest" href="{{{domainurl}}}manifest.json">
+    <link type="image/x-icon" href="{{{domainurl}}}favicon.ico" rel="shortcut icon" />
+    <link keeplink=1 type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/flatpickr.min.css" media="screen" rel="stylesheet" title="CSS">
+    <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/amt-0.2.0{{{min}}}.js"></script>
@@ -37,10 +49,9 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/purify{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/marked{{{min}}}.js"></script>
-    <link keeplink=1 type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
-
+    <title>{{{title}}}</title>
 </head>
-<body  id="body"  oncontextmenu="handleContextMenu(event)">
+<body  id="body"  oncontextmenu="handleContextMenu(event)" onload="if (typeof(startup) !== 'undefined') startup();">
 
     <div>
   <h1>MeshCentral</h1>
@@ -186,7 +197,7 @@
                             <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()" />Input</span></label>&nbsp;
                         </div>
                     </div>
-                </div>
+        </div>
         <table id=MainMenuSpan cellpadding=0 cellspacing=0 class=style1>
                         <tr>
                             <td tabindex=0 id=MainMenuMyDevices class="topbar_td style3x" onmouseup=go(1,event) onkeypress="if (event.key == 'Enter') go(1)">My Devices</td>
@@ -1393,13 +1404,15 @@
     
   
     window.onload = () => {
-  
 
+        
         document.getElementById('MainSubMenuSpan').style.display = 'none';
         document.getElementById('tabContent').style.display = 'none';
         startup();
+
     };
-var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
+
+    var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
 
         // Process server-side web state
         var webState = '{{{webstate}}}';
@@ -1522,6 +1535,7 @@ var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
         });
 
         function startup() {
+            console.log("-- 1538 startup()");
             if ((features & 32) == 0) {
                 // Guard against other site's top frames (web bugs).
                 var loc = null;
@@ -1590,6 +1604,8 @@ var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
                 if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" CLASS="LogoffLinkColor">' + "Logout" + '</a>'); }
             }
             if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { }//QH('logoutControlSpan', logoutControl); }
+            
+            console.log("-- 1608 startup");
 
             // Setup the context menu
             document.onclick = function (e) { hideContextMenu(); }
@@ -4100,6 +4116,9 @@ var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
         }
 
         function ondockeypress(e) {
+            console.log("-- 4119 ondockeypress");
+            xxcurrentView = 11;
+            Q('DeskControl').checked = true;
             setSessionActivity();
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
@@ -4159,7 +4178,10 @@ var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
         }
 
         function ondockeydown(e) {
+            console.log("-- 4178 function ondockeydown");
             setSessionActivity();
+            xxcurrentView = 11;
+            Q('DeskControl').checked = true;
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
@@ -4193,6 +4215,9 @@ var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
         }
 
         function ondockeyup(e) {
+            console.log("-- 4211 function ondockeyup");
+            xxcurrentView = 11;
+            Q('DeskControl').checked = true;
             setSessionActivity();
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
@@ -7149,6 +7174,7 @@ var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
 
         // Called When Place a node option is clicked from context menu
         function placeNode(coords) {
+            console.log("-- 7164 placeNode()");
             if (xxdialogMode) return;
             var x = '<div style=margin-bottom:6px><label for=selectnode-search>' + "Search" + '</label>&nbsp&nbsp<input type=text placeholder="' + "Device name" + '" id="selectnode-search" onchange=onPlaceNodeInputChange() onkeyup=onPlaceNodeInputChange() autocomplete=off style=width:120px></div><div id=placenode style="height:254px;overflow-y:auto;width:100%;margin:12px 1px 4px 1px;"><div id=noNodesMapPlace style=text-align:center;width:100%;display:none>' + "No devices found." + '</div>';
             for (var i in nodes) {
@@ -9252,6 +9278,9 @@ var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
             QV('p11DeskSessionSelector', false);
             p11clearConsoleMsg();
             console.log("-- 9347 desktop:", desktop);
+
+            document.getElementById('Desk').focus();
+
             if (desktop == null) {
                 desktopNode = currentNode;
                 if ((contype == null) || (contype == 1) || ((contype == 3) && ((currentNode.agent.id > 4) && ((debugmode == null))))) {
@@ -19246,5 +19275,4 @@ var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
     </script>
 </body>
 </html>
-
    
