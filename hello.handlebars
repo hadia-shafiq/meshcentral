@@ -126,7 +126,7 @@
                         </div>
                         <div>
                             <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none;margin-right:4px" />
-                            <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" title="Connect using MeshAgent remote desktop" value="Connect test 1" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                            <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" title="Connect using MeshAgent remote desktop" value="Connect test 1" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false"/></span>
                             <span id=connectbutton1rspan><input type=button id=connectbutton1r cmenu="altPortContextMenu" value="RDP Connect test 2 view-desktop div" title="Connect using RDP" onclick=askRdpCredentials() onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=connectbutton1hspan><input type=button id=connectbutton1h value="HW Connect test 3" title="Connect using hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=disconnectbutton1span><input type=button id=disconnectbutton1 cmenu="deskDisconnectButton" value="Disconnect test 4 " onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
@@ -1307,8 +1307,11 @@
   <script>
      'use strict';
 
+     
+
     var nodesx = {{{deviceGroupsJson}}}; // Handlebars injects this JSON
     var currentNodex = null;
+    var agentIdx = null;
 
     function getNodeFromIdx(id) {
       for (const mesh of nodesx) {
@@ -1320,19 +1323,6 @@
         }
       }
       return null;
-    }
-
-    function showdesc(btnElement) {
-      const agentId = btnElement.getAttribute("agentId");
-      currentNodex = getNodeFromIdx(agentId);
-      console.log("showdesc currentNodex:", currentNodex, agentId, nodesx);
-
-      document.getElementById('agentList').style.display = 'none';
-      document.getElementById('MainSubMenuSpan').style.display = 'block';
-      document.getElementById('tabContent').style.display = 'block';
-      //idleTimeoutNotifyconsole.log("-- 285 hello.handlebars function showdesc currentNode:", currentNodex.conn);
-
-      gox(10); // Show General tab
     }
 
     function renderGeneral(node) {
@@ -1533,6 +1523,8 @@
                 d7encoding.value = 1;
             }
         });
+
+        
 
         function startup() {
             console.log("-- 1538 startup()");
@@ -9263,6 +9255,8 @@
         }
 
         function connectDesktop(e, contype, tsid, consent) {
+           // currentNodex = getNodeFromIdx(agentIdx);
+
             currentNode = currentNodex; 
             /*
                 currentNode = currentNodex; 
@@ -19271,7 +19265,92 @@
         window.addEventListener('beforeunload', function (e) {
             if (((desktop != null) && (xxcurrentView == 11)) || ((terminal != null) && (xxcurrentView == 12))) { e.preventDefault(); e.returnValue = ''; }
         });
+
+        // working
+const DESKTOP_VIEW = 11; // Desktop tab index used by MeshCentral
+function showdesc(btnEl) {
+  const agentId = btnEl.getAttribute("agentId");
+  console.log("___1", agentId);
+  agentIdx = agentId;
+  currentNodex = getNodeFromIdx(agentId);
+
+  if (!agentId) {
+    console.log("[showdesc] No agentId on button");
+    return;
+  }
+  routeToRscreen(agentId);
+}
+
+// Jump directly to Rscreen for a given agentId
+function routeToRscreen(agentId) {
+
+  let node = getNodeFromIdx(agentId);
+  console.log("___ routeToRscreen",agentId);
+
+
+  currentNodex = node;
+  currentNode = node;
+
+  // Show the same panels your app uses
+  const hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
+  const show = id => { const el = document.getElementById(id); if (el) el.style.display = 'block'; };
+  hide('agentList'); 
+  show('MainSubMenuSpan');
+  show('tabContent');
+
+  // Make sure the desktop view is active so global key handlers work
+  if (typeof gox === 'function') { gox(DESKTOP_VIEW); }
+  else if (typeof go === 'function') { go(DESKTOP_VIEW); }
+  else { window.xxcurrentView = DESKTOP_VIEW; }
+
+  // Allow input & focus canvas for keyboard
+  const dc = document.getElementById('DeskControl'); if (dc) dc.checked = true;
+  const desk = document.getElementById('Desk');
+  if (desk) {
+    desk.tabIndex = 0;
+    desk.focus();
+    ['pointerdown','click','mouseenter'].forEach(ev =>
+      desk.addEventListener(ev, () => desk.focus(), { passive:true })
+    );
+  }
+
+  // Auto-connect the desktop session (MeshAgent KVM/WebRTC)
+  if (typeof connectDesktop === 'function') {
+    try { connectDesktop(null, 3); } catch (e) { console.log('connectDesktop failed', e); }
+  }
+
+  console.log('[Rscreen] opened for agent', agentId);
+}
+
+// Optional: expose for other windows/iframes to call
+window.openRscreen = routeToRscreen;
+
+// Boot-time deep-link handler (supports query OR hash)
+window.addEventListener('load', function () {
+  try {
+    const url = new URL(window.location.href);
+    const view = url.searchParams.get('viewmode');
+    let nodeId = "node//" + url.searchParams.get('gotonode');
+    console.log("___2 url", nodeId);
+
+    /
+
+    if (nodeId) {
+      // If the node id was URL-encoded in the query string, decode it
+      //try { nodeId = decodeURIComponent(nodeId); } catch (_) {}
+      routeToRscreen(nodeId); // No URL cleaning here (prevents the black screen)
+    }
+    document.body.classList.add('ready');
+
+  } catch (e) {
+    console.log('[Rscreen] deep-link error', e);
+  }
+});
+
+
+
     
+   
     </script>
 </body>
 </html>
